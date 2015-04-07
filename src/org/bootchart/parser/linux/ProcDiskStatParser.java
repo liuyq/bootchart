@@ -44,7 +44,7 @@ import org.bootchart.common.Stats;
 public class ProcDiskStatParser {
 	private static final Logger log = Logger.getLogger(ProcDiskStatParser.class.getName());
 
-	private static final String DISK_REGEX = "hd.|sd.";
+    private static final String DISK_REGEX = "hd.|sd.|mmcblk.";
 	
 	/** DiskStatSample encapsulates a /proc/diskstat sample. */
 	private static class DiskStatSample {
@@ -64,6 +64,7 @@ public class ProcDiskStatParser {
 	 */
 	public static Stats parseLog(InputStream is, int numCpu)
 		throws IOException {
+        System.out.println("numCpu=" + numCpu);
 		BufferedReader reader = Common.getReader(is);
 		String line = reader.readLine();
 
@@ -108,8 +109,15 @@ public class ProcDiskStatParser {
 				}
 				String disk = tokens[2];
 				
+                // Documentation/iostats.txt
+                // Field 3 -- # of sectors read
+                // This is the total number of sectors read successfully.
 				long rsect = Long.parseLong(tokens[5]);
+                // Field 7 -- # of sectors written
+                // This is the total number of sectors written successfully.
 				long wsect = Long.parseLong(tokens[9]);
+                // Field 10 -- # of milliseconds spent doing I/Os
+                // This field increases so long as field 9 is nonzero.
 				long use = Long.parseLong(tokens[12]);
 				DiskStatSample sample = (DiskStatSample)diskStatMap.get(disk);
 				if (sample == null) {
@@ -144,7 +152,6 @@ public class ProcDiskStatParser {
 				// number of ticks (1000/s), reduced to one CPU
 				double util = (double)sums[2] / interval / numCpu;
 				util = Math.max(0.0, Math.min(1.0, util));
-				
 				DiskTPutSample tputSample = new DiskTPutSample(time, readTPut, writeTPut);
 				DiskUtilSample utilSample = new DiskUtilSample(time, util);
 				diskStats.addSample(tputSample);

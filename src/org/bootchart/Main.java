@@ -132,8 +132,8 @@ public class Main {
 		}
 
 		if (fileArgs.length == 0) {
-            File logTarball = new File("/tmp/juno.tgz");
-			File logDir = new File("/var/log/bootchart");
+            File logTarball = new File("/tmp/bootchart.tgz");
+            File logDir = new File("/tmp/bootchart");
 			if (logTarball.exists()) {
 				inputFiles.add(logTarball);
 			} else if (logDir.exists()) {
@@ -306,8 +306,9 @@ public class Main {
 		FileOutputStream fos = new FileOutputStream(fileName);
 		renderer.render(headers, bootStats, fos);
 		fos.close();
-		log.fine("Wrote image: " + fileName);
-		System.out.println("Wrote image: " + fileName);
+        log.fine("Wrote image: " + new File(fileName).getAbsolutePath());
+        System.out.println("Wrote image: "
+                + new File(fileName).getAbsolutePath());
 		opTime = System.currentTimeMillis() - opTime;
 		log.fine("Render time: " + opTime + " ms)");
 		return fileName;
